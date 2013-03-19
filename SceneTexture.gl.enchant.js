@@ -7,7 +7,7 @@
  * @author kamakiri01
  *
  * @description
- * This library provides smooth animation exture for 3D objects.
+ * This library provides smooth animation Texture for 3D objects.
  * Sameness of freestyle with enchant.js gaming is possible in texture construction.
  *
  */
@@ -58,6 +58,7 @@ var SceneTexture = enchant.Class.create(enchant.CanvasLayer,{
 
 /**
  * Add drowing event to parent object.
+ * Must be applied for parent object at once.
  */
 var optimizeSprite3dForTextureScene = function(target, arg){
     if(target instanceof enchant.gl.Sprite3D){
@@ -67,10 +68,10 @@ var optimizeSprite3dForTextureScene = function(target, arg){
         }else{
             rate = arg;
         };
-        target._refleshRate = rate;
+        target._refreshRate = rate;
 
         target.addEventListener('enterframe', function(){
-            if(this.age % this._refleshRate ==0 && this.age != 0){
+            if(this.age % this._refreshRate ==0 && this.age != 0){
                 this.mesh.texture._write();
             };
         });
