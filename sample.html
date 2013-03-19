@@ -1,0 +1,192 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script type="text/javascript" src="./libs/enchant.js"></script>
+	<script type="text/javascript" src="./libs/gl-matrix-min.js"></script>
+	<script type="text/javascript" src="./libs/gl.enchant.js"></script>
+    <script type="text/javascript" src="./libs/primitive.gl.enchant.js"></script>
+    <script type="text/javascript" src="./SceneTexture.gl.enchant.js"></script>
+	<script type="text/javascript">
+	//canvasLayerをglオブジェクトのテクスチャとして利用する
+
+var bearImage = './images/chara1.png';
+var bgImage   = './images/enchant.png';
+var lastDate = new Date;
+var framedata = 0;  //フレームレート保持変数
+var cubes = []; //キューブ群のリスト
+
+var reso = 16;  //キューブ群の一列あたりの分割キューブ数
+var cubeScale = 1;  //キューブ1つのスケール
+var cubeInterval = 2;   //キューブ間の隙間
+
+enchant();
+window.onload = function(){
+    game = new Core(512, 512);
+    game.fps = 20;
+    game.preload(bearImage, bgImage);
+    game.onload = function () {
+
+        /**
+         * テクスチャとして利用するCanvasLayerを宣言する
+         * 
+         * NOTE:
+         * このオブジェクトをテクスチャに利用する場合、
+         * 利用するSprite3dに対してoptimizeSprite3dForTextureSceneの適用が必要。
+         * 
+         */
+        var cvl = new SceneTexture();
+
+        /**
+         * テクスチャ内の背景のセット
+         */
+        var bg = new Sprite(512,512);
+        bg.image = game.assets[bgImage];
+        bg.frame = 0;
+        bg.x  =1;
+        bg.y = 1;
+        bg.opacity=0.3;
+        cvl.addChild(bg);
+
+        /**
+         * テクスチャ内の時計のセット
+         */
+        var clock = new Label("");
+        clock.x = 130; clock.y = 150;
+        clock.color= "red";
+        clock.text = "";
+        clock.font = "80px bold sans";
+        cvl.addChild(clock);
+        clock.onenterframe = function (){
+            var now = new Date;
+            this.text = now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
+        };
+
+        /**
+         * テクスチャ内のスプライトのセット
+         */
+        var be = new Sprite(32,32);
+        be.x= 100;
+        be.y = 200;
+        be.acc = 10;
+        be.image = game.assets[bearImage];
+        be.frame  =0;
+        be.scaleX = 12;
+        be.scaleY = 12;
+        be.onenterframe= function(){
+            this.x += this.acc;
+            if(this.x > 512 || this.x <= 0){
+                this.acc = - this.acc;
+                this.scaleX*=-1;
+            }
+            this.frame ++;
+            if(this.frame > 2){
+                this.frame = 1;    
+            }
+        }
+        cvl.addChild(be);
+
+        /**
+         * シーンのフレームレートを表示
+         */
+        var param = new Label("");
+        param.x = 290;
+        param.y = 5;
+        param.font = "50px bold sans";
+        param.text = "0 fps";
+        param.color = "black";
+        game.rootScene.addChild(param);
+        param.onenterframe = function(){
+            var thisDate = new Date;
+            framedata = Math.round(1000 / (thisDate - lastDate));
+            lastDate = thisDate;
+            param.text = framedata+"/"+game.fps+ " fps";
+        };
+
+
+        /**
+         * GL空間を宣言する
+         */
+        var scene = Scene3D();
+        scene.backgroundColor = [0.1, 0.2, 0.25, 1];
+        var camera = scene.getCamera();
+        camera.x = 20;
+        camera.y = 5;
+        camera.z =200;
+
+        /**
+         * SceneTextureの描画先を宣言する
+         */
+        var texture = new Texture();
+        texture.ambient = [1.0, 1.0, 1.0, 0.7];
+        texture.diffuse = [0.0, 0.0, 0.0, 0.7];
+        texture.specular = [0.0, 0.0, 0.0, 0.7];
+        texture.src = cvl._element;
+       
+        /**
+         * 分割されたキューブ群をセット
+         */
+        for(var i=0;i<reso*reso;i++){
+            var cube = new Cube(cubeScale);
+            cube.theta = 0;
+            cube.ix = (i%reso - reso/2)*cubeScale*cubeInterval;
+            cube.iy = (Math.floor(i/reso )- reso/2)*cubeScale*cubeInterval; 
+            cube.z = 0;
+            cube.mesh.texture = texture;
+            cube.onenterframe = function(){
+                this.x = (this.ix)* (Math.abs(Math.cos(this.theta* Math.PI))+0.7);
+                this.y = (this.iy)* (Math.abs(Math.cos(this.theta* Math.PI))+0.7);
+                this.theta+=0.03;
+            };
+
+            /**
+             * キューブのテクスチャをレイアウト位置に従うよう個別に取得
+             */
+            cube.mesh.texCoords = [
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
+(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso
+            ];
+
+            scene.addChild(cube);
+        }
+
+        /**
+         * 分割されたキューブ群をセット
+         *
+         * NOTE:
+         * optimizeSprite3dForTextureScene関数は、引数のオブジェクトが持つTextureに作用する。
+         * そのため複数のSprite3dが同一のSceneTextureを参照している場合、
+         * この関数を複数回適用する必要はない。
+         */
+        optimizeSprite3dForTextureScene(cube);
+
+
+        /**
+         * マウスでカメラロールさせるイベントをセット
+         */
+        var oldX = 0;
+        r = 0;
+        game.rootScene.addEventListener('touchstart', function(e) {
+            oldX = e.x;
+        });
+        game.rootScene.addEventListener('touchmove', function(e) {
+            r += (e.x - oldX) / 100 ;
+            camera.x = Math.cos(r - 0.8 - Math.PI) * 200;
+            camera.z = Math.sin(r - 0.8 - Math.PI) * 200;
+            oldX = e.x;
+        });
+    }
+game.start();
+}
+
+</script>
+</head>
+<body>
+
+</body>
+</html>
