@@ -9,23 +9,16 @@
     <script type="text/javascript" src="./libs/primitive.gl.enchant.js"></script>
     <script type="text/javascript" src="./SceneTexture.gl.enchant.js"></script>
 	<script type="text/javascript">
-	//canvasLayerをglオブジェクトのテクスチャとして利用する
 
 var bearImage = './images/chara1.png';
 var bgImage   = './images/enchant.png';
-var lastDate = new Date;
-var framedata = 0;  //フレームレート保持変数
-var cubes = []; //キューブ群のリスト
-
-var reso = 16;  //キューブ群の一列あたりの分割キューブ数
-var cubeScale = 1;  //キューブ1つのスケール
-var cubeInterval = 2;   //キューブ間の隙間
+var iconImage = './images/icon0.png';
 
 enchant();
 window.onload = function(){
     game = new Core(512, 512);
     game.fps = 20;
-    game.preload(bearImage, bgImage);
+    game.preload(bearImage, bgImage, iconImage);
     game.onload = function () {
 
         /**
@@ -46,64 +39,54 @@ window.onload = function(){
         bg.frame = 0;
         bg.x  =1;
         bg.y = 1;
-        bg.opacity=0.3;
+        bg.opacity=0.7;
         cvl.addChild(bg);
-
-        /**
-         * テクスチャ内の時計のセット
-         */
-        var clock = new Label("");
-        clock.x = 130; clock.y = 150;
-        clock.color= "red";
-        clock.text = "";
-        clock.font = "80px bold sans";
-        cvl.addChild(clock);
-        clock.onenterframe = function (){
-            var now = new Date;
-            this.text = now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
-        };
 
         /**
          * テクスチャ内のスプライトのセット
          */
         var be = new Sprite(32,32);
         be.x= 100;
-        be.y = 200;
+        be.y = 400;
         be.acc = 10;
         be.image = game.assets[bearImage];
         be.frame  =0;
-        be.scaleX = 12;
-        be.scaleY = 12;
+        be.scaleX = 4;
+        be.scaleY = 4;
         be.onenterframe= function(){
             this.x += this.acc;
-            if(this.x > 512 || this.x <= 0){
+            if(this.x > 512-this.width || this.x <= 0){
                 this.acc = - this.acc;
                 this.scaleX*=-1;
             }
             this.frame ++;
             if(this.frame > 2){
                 this.frame = 1;    
-            }
-        }
+            };
+        };
         cvl.addChild(be);
 
         /**
-         * シーンのフレームレートを表示
+         * りんごが落ちてくる
          */
-        var param = new Label("");
-        param.x = 290;
-        param.y = 5;
-        param.font = "50px bold sans";
-        param.text = "0 fps";
-        param.color = "black";
-        game.rootScene.addChild(param);
-        param.onenterframe = function(){
-            var thisDate = new Date;
-            framedata = Math.round(1000 / (thisDate - lastDate));
-            lastDate = thisDate;
-            param.text = framedata+"/"+game.fps+ " fps";
-        };
-
+        be.addEventListener('enterframe', function(){
+            if(this.age % 15 == 0){
+                var ap = new Sprite(16,16);
+                ap.x = Math.random() * game.width;
+                ap.y = -10;
+                ap.scaleX = 4;
+                ap.scaleY = 4;
+                ap.image = game.assets[iconImage];
+                ap.frame = 15;
+                cvl.addChild(ap);
+                ap.onenterframe = function(){
+                    this.y += 5;
+                    if(this.y > game.height || this.intersect(be)){
+                        cvl.removeChild(this);
+                    };
+                };
+            };
+        });
 
         /**
          * GL空間を宣言する
@@ -111,9 +94,9 @@ window.onload = function(){
         var scene = Scene3D();
         scene.backgroundColor = [0.1, 0.2, 0.25, 1];
         var camera = scene.getCamera();
-        camera.x = 20;
-        camera.y = 5;
-        camera.z =200;
+        camera.x = 0;
+        camera.y = 0;
+        camera.z = 20;
 
         /**
          * SceneTextureの描画先を宣言する
@@ -125,64 +108,36 @@ window.onload = function(){
         texture.src = cvl._element;
        
         /**
-         * 分割されたキューブ群をセット
+         * 平面を生成
          */
-        for(var i=0;i<reso*reso;i++){
-            var cube = new Cube(cubeScale);
-            cube.theta = 0;
-            cube.ix = (i%reso - reso/2)*cubeScale*cubeInterval;
-            cube.iy = (Math.floor(i/reso )- reso/2)*cubeScale*cubeInterval; 
-            cube.z = 0;
-            cube.mesh.texture = texture;
-            cube.onenterframe = function(){
-                this.x = (this.ix)* (Math.abs(Math.cos(this.theta* Math.PI))+0.7);
-                this.y = (this.iy)* (Math.abs(Math.cos(this.theta* Math.PI))+0.7);
-                this.theta+=0.03;
-            };
+        var p = new Plane(1);
+        p.x = 0;
+        p.y = 0;
+        p.z = 0;
+        p.mesh.texture = texture;
 
-            /**
-             * キューブのテクスチャをレイアウト位置に従うよう個別に取得
-             */
-            cube.mesh.texCoords = [
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso,
-(i%reso)/reso +1/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso +1/reso,  (i%reso)/reso,(Math.floor(i/reso))/reso,  (i%reso)/reso +1/reso,(Math.floor(i/reso))/reso
-            ];
+        scene.addChild(p);
 
-            scene.addChild(cube);
-        }
-
-        /**
-         * 分割されたキューブ群をセット
-         *
-         * NOTE:
-         * optimizeSprite3dForTextureScene関数は、引数のオブジェクトが持つTextureに作用する。
-         * そのため複数のSprite3dが同一のSceneTextureを参照している場合、
-         * この関数を複数回適用する必要はない。
-         */
-        optimizeSprite3dForTextureScene(cube);
+        optimizeSprite3dForTextureScene(p);
 
 
         /**
          * マウスでカメラロールさせるイベントをセット
          */
         var oldX = 0;
-        r = 0;
+        r = Math.PI/2;
         game.rootScene.addEventListener('touchstart', function(e) {
             oldX = e.x;
         });
         game.rootScene.addEventListener('touchmove', function(e) {
             r += (e.x - oldX) / 100 ;
-            camera.x = Math.cos(r - 0.8 - Math.PI) * 200;
-            camera.z = Math.sin(r - 0.8 - Math.PI) * 200;
+            camera.x = Math.cos(r) * 20;
+            camera.z = Math.sin(r) * 20;
             oldX = e.x;
         });
-    }
+    };
 game.start();
-}
+};
 
 </script>
 </head>
