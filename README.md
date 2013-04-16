@@ -3,7 +3,10 @@ SceneTexture.gl.enchant.js
 
 <img src="https://dl.dropboxusercontent.com/u/56132927/scriptogram/canvastexture.png">
 
-plugin for enchant.js
+This.is plugin for enchant.js
+
+This library provides smooth animation Texture for 3D objects.
+Sameness of freestyle with enchant.js gaming is possible in texture construction.
 
 read
 --------
