@@ -46,12 +46,12 @@ var SceneTexture = enchant.Class.create(enchant.CanvasLayer,{
 
                 if(node.childNodes){
                     push.apply(nodes, node.childNodes);
-                };
+                }
 
                 if(enchant.Core.instance.age<1){
                     this._startRendering();
-                };
-            };
+                }
+            }
         });
     }
 });
@@ -63,17 +63,17 @@ var SceneTexture = enchant.Class.create(enchant.CanvasLayer,{
 var optimizeSprite3dForTextureScene = function(target, arg){
     if(target instanceof enchant.gl.Sprite3D){
         var rate;
-        if(arg == undefined){
+        if(arg === undefined){
             rate = 1;
         }else{
             rate = arg;
-        };
+        }
         target._refreshRate = rate;
 
         target.addEventListener('enterframe', function(){
-            if(this.age % this._refreshRate ==0 && this.age != 0){
+            if(this.age % this._refreshRate === 0 && this.age !== 0){
                 this.mesh.texture._write();
-            };
+            }
         });
-    };
-}
+    }
+};
