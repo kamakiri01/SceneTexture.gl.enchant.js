@@ -8,6 +8,10 @@ This.is plugin for enchant.js
 This library provides smooth animation Texture for 3D objects.
 Sameness of freestyle with enchant.js gaming is possible in texture construction.
 
+demo
+--------
+[demo](http://9leap.net/games/2837)
+
 read
 --------
 
