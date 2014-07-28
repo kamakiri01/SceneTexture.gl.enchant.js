@@ -10,7 +10,8 @@ Sameness of freestyle with enchant.js gaming is possible in texture construction
 
 demo
 --------
-[demo](http://9leap.net/games/2837)
+[demo1](http://9leap.net/games/2837)
+[demo2](http://9leap.net/games/2220)
 
 read
 --------
