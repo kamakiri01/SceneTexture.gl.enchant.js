@@ -18,6 +18,11 @@ read
 
 - [read this entry](http://text.phasespaces.net/post/scenetexture.gl.enchant.js)
 
+read
+--------
+don't use core.pushScene method. this will make bug.
+use Group class.
+
 
 enchant.js
 --------
