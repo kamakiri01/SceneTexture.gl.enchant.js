@@ -1,7 +1,7 @@
 SceneTexture.gl.enchant.js
 ==========
 
-<img src="https://dl.dropboxusercontent.com/u/56132927/scriptogram/canvastexture.png">
+<img src="https://raw.githubusercontent.com/kamakiri01/SceneTexture.gl.enchant.js/master/images/sample.png">
 
 This.is plugin for enchant.js
 
